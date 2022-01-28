@@ -1,34 +1,51 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js'
+
+const supabase_anon_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyNjY1NywiZXhwIjoxOTU4OTAyNjU3fQ.SuKHJdleB-mLfJt6kIxKClB1W3ptf6HrX3ODaFE-Pq0'
+const supabase_url = 'https://xcnsahzmqymdjghkjaty.supabase.co'
+const supabaseClient = createClient(supabase_url, supabase_anon_key)
 
 export default function ChatPage() {
     const [mensagem, setMensagem] = React.useState('');
     const [listaDeMensagens, setlistaDeMensagens] = React.useState([]);
-    // Usuário --
-    // Sua lógica vai aqui
-    // Usuário digita no textarea
-    // Aperta enter para enviar
-    // Tem q adicionar o texto na listagem
 
-    // Dev --
-    // Campo criado [X]
-    // Vamos usar o onChange usa o useState (ter if caso seja enter para limpar a variável) [X]
-    // Lista de mensagem []
+    React.useEffect(() => {
+        supabaseClient
+            .from('mensagens')
+            .select('*')
+            .order('id', { ascending: false })
+            .then(({data}) => {
+                setlistaDeMensagens(data);
+            });
+    }, []);
 
-    // ./Sua lógica vai aqui
     function handleNovaMensagem(novaMensagem) {
         const mensagem = {
-            id: listaDeMensagens.length + 1,
+            //id: listaDeMensagens.length + 1,
             de: 'Eduardo-Riboli',
             texto: novaMensagem,
         };
+
+        supabaseClient
+            .from('mensagens')
+            .insert([
+                mensagem
+            ])
+            .then(({ data }) => {
+                setlistaDeMensagens([
+                    data[0],
+                    ...listaDeMensagens,
+                ])
+            });
+
         //Chamada Back end
-        setlistaDeMensagens([
-            mensagem,
-            ...listaDeMensagens,
-            
-        ]);
+        //setlistaDeMensagens([
+            //mensagem,
+            //...listaDeMensagens,
+
+       // ]);
         setMensagem('');
     }
 
@@ -142,7 +159,7 @@ function MessageList(props) {
         <Box
             tag="ul"
             styleSheet={{
-                overflow: 'scroll',
+                overflow: 'hidden hidden',
                 display: 'flex',
                 flexDirection: 'column-reverse',
                 flex: 1,
@@ -177,7 +194,7 @@ function MessageList(props) {
                                     display: 'inline-block',
                                     marginRight: '8px',
                                 }}
-                                src={`https://github.com/vanessametonini.png`}
+                                src={`https://github.com/${mensagem.de}.png`}
                             />
                             <Text tag="strong">
                                 {mensagem.de}
